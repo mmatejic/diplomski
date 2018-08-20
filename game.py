@@ -38,6 +38,9 @@ class Moci():
         self.slika = slika
         self.posX = posX
 
+    def __del__(self):
+        pass
+
 def gameMainLoop():
     global run, poeni, listaPrepreka, backgroundSpeed, brzinaFlag, stitFlag
     backgroundSpeed = 5
@@ -48,7 +51,7 @@ def gameMainLoop():
     igrac.posY = 600
     igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
     while run:
-        pygame.time.delay(10)
+        pygame.time.delay(20)
         refreshScreen()
         stvarajPrepreke()
 
@@ -90,21 +93,25 @@ def gameMainLoop():
                 gameOver()
             elif igrac.hitbox.colliderect(prepreka.hitbox) and moc.pokupljena and moc.ime == "2x":
                 gameOver()
-        if igrac.hitbox.colliderect(moc.hitbox):
+
+        if igrac.hitbox.colliderect(moc.hitbox) and not moc.pokupljena:
             moc.pokupljena = True
+            moc.trajanje = 500
 
 
 
 def refreshScreen():
-    global backgroundOffset, mocFlag, mocPravac, mocCounter, stitFlag, brzinaFlag
+    global backgroundOffset, mocFlag, mocPravac, backgroundSpeed
     inicijalnaBrzina = backgroundSpeed
+    if moc.pokupljena and moc.ime == "2x":
+        backgroundSpeed += 2
     prozor.blit(background, (0, backgroundOffset))
-    pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
+    #pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
     prozor.blit(pauza, (550, 0))
 
     for prepreka in listaPrepreka:
         if moc.pokupljena and moc.ime == "2x":
-            prepreka.posY += backgroundSpeed*2
+            prepreka.posY += backgroundSpeed+2
         else:
             prepreka.posY += inicijalnaBrzina
         prozor.blit(prepreka.slika, (prepreka.posX, prepreka.posY))
@@ -116,21 +123,24 @@ def refreshScreen():
             moc.trajanje -= 1
         if moc.trajanje == 0:
             moc.pokupljena = False
+            moc.posY = 850
+            backgroundSpeed = inicijalnaBrzina
         if not moc.pokupljena:
             prozor.blit(moc.slika, (moc.posX, moc.posY))
-            pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(moc.posX, moc.posY, 100, 100), 5)
+            #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(moc.posX, moc.posY, 100, 100), 5)
 
         if moc.posX < 70 or moc.posX > 430:
             mocPravac *= -1
         moc.posX += mocPravac*5
-        moc.posY += 1
+        moc.posY += 5
         moc.hitbox = pygame.Rect(moc.posX, moc.posY, 100, 100)
-        if moc.posY > 850:
+        if moc.posY > 850 and moc.trajanje == 0:
             mocFlag = False
-    for prepreka in listaPrepreka:
-        pygame.draw.rect(prozor, (255, 0, 0), prepreka.hitbox, 5)
+
+    '''for prepreka in listaPrepreka:
+        pygame.draw.rect(prozor, (255, 0, 0), prepreka.hitbox, 5)'''
     if moc.pokupljena and moc.ime == "2x":
-        backgroundOffset += backgroundSpeed*2
+        backgroundOffset += backgroundSpeed+2
     else:
         backgroundOffset += backgroundSpeed
     if backgroundOffset > 0:
@@ -144,7 +154,7 @@ def stvarajPrepreke():
     global mocFlag, moc
     if random.randint(1, 100) == 50:
         listaPrepreka.append(Prepreka(random.choice(pozicijePreprekaX)))
-    if random.randint(1, 10) == 5 and not mocFlag:
+    if random.randint(1, 100) == 5 and not mocFlag:
         randomBroj = random.randint(0, 1)
         moc = Moci(listaMociSlika[randomBroj], listaMociImena[randomBroj], random.choice(pozicijePreprekaX))
         mocFlag = True
@@ -174,6 +184,8 @@ def gameOver():
                 x, y = event.pos
                 if playAgainRect.collidepoint(x, y):
                     cekaj = False
+                    moc.pokupljena = False
+                    moc.trajanje = 0
                     gameMainLoop()
                 elif quitRect.collidepoint(x, y):
                     run = False
