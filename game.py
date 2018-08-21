@@ -11,7 +11,7 @@ class Player():
     posX = 250
     posY = 600
     slika = pygame.image.load('auto.png')
-    brzina = 4
+    brzina = 6
     hitbox = pygame.Rect(posX, posY, 100, 180)
 
 class Prepreka():
@@ -19,6 +19,7 @@ class Prepreka():
     posY = -100
     slika = pygame.image.load('kutija.png')
     hitbox = pygame.Rect(posX, posY, 100, 100)
+    slomljena = False
     def __init__(self, x):
         self.posX = x
 
@@ -29,10 +30,11 @@ class Moci():
     posX = 0
     posY = -100
     ime = ""
-    slika = pygame.image.load("2x.png")
+    slika = pygame.image.load("brzina.png")
     hitbox = pygame.Rect(posX, posY, 100, 100)
     trajanje = 500
     pokupljena = False
+    balon = pygame.image.load("balon.png")
     def __init__(self, slika, ime, posX):
         self.ime = ime
         self.slika = slika
@@ -40,6 +42,48 @@ class Moci():
 
     def __del__(self):
         pass
+
+def mainMenu():
+    menu = True
+    menuSlika = pygame.image.load("menuSlika.png")
+
+    while menu:
+        prozor.blit(menuSlika, (0, 0))
+        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 355, 160, 50), 5)
+        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 430, 160, 50), 5)
+        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 580, 150, 50), 5)
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if pygame.Rect(220, 355, 160, 50).collidepoint(x, y):
+                    menu = False
+                if pygame.Rect(225, 580, 150, 50).collidepoint(x, y):
+                    menu = False
+                    pygame.quit()
+                    quit()
+                if pygame.Rect(220, 430, 160, 50).collidepoint(x, y):
+                    helpMenu()
+
+
+def helpMenu():
+    helpFlag = True
+    helpSlika = pygame.image.load("help.png")
+    while helpFlag:
+        prozor.blit(helpSlika, (0, 0))
+        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(210, 680, 160, 50), 5)
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if pygame.Rect(210, 680, 160, 50).collidepoint(x, y):
+                    helpFlag = False
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
 
 def gameMainLoop():
     global run, poeni, listaPrepreka, backgroundSpeed, brzinaFlag, stitFlag
@@ -50,8 +94,11 @@ def gameMainLoop():
     igrac.posX = 250
     igrac.posY = 600
     igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
+    mainMenu()
     while run:
-        pygame.time.delay(20)
+        #pygame.time.delay(10)
+        clock = pygame.time.Clock()
+        pygame.display.flip()
         refreshScreen()
         stvarajPrepreke()
 
@@ -71,49 +118,56 @@ def gameMainLoop():
                                 pauzaFlag = False
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             if igrac.posX > 70:
                 igrac.posX -= igrac.brzina
                 igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_d]:
             if igrac.posX < 430:
                 igrac.posX += igrac.brzina
                 igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             if igrac.posY > 10:
                 igrac.posY -= igrac.brzina
                 igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
-        elif keys[pygame.K_DOWN]:
+        elif keys[pygame.K_s]:
             if igrac.posY < 600:
                 igrac.posY += igrac.brzina
                 igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
 
         for prepreka in listaPrepreka:
-            if igrac.hitbox.colliderect(prepreka.hitbox) and not moc.pokupljena:
+            if igrac.hitbox.colliderect(prepreka.hitbox) and not moc.pokupljena and not prepreka.slomljena:
                 gameOver()
-            elif igrac.hitbox.colliderect(prepreka.hitbox) and moc.pokupljena and moc.ime == "2x":
+            elif igrac.hitbox.colliderect(prepreka.hitbox) and moc.pokupljena and moc.ime == "brzina" and not prepreka.slomljena:
                 gameOver()
 
-        if igrac.hitbox.colliderect(moc.hitbox) and not moc.pokupljena:
+        if igrac.hitbox.colliderect(moc.hitbox) and not moc.pokupljena and mocFlag:
             moc.pokupljena = True
             moc.trajanje = 500
+        clock.tick(50)
+
 
 
 
 def refreshScreen():
     global backgroundOffset, mocFlag, mocPravac, backgroundSpeed
     inicijalnaBrzina = backgroundSpeed
-    if moc.pokupljena and moc.ime == "2x":
+    if moc.pokupljena and moc.ime == "brzina":
         backgroundSpeed += 2
     prozor.blit(background, (0, backgroundOffset))
     #pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
     prozor.blit(pauza, (550, 0))
 
     for prepreka in listaPrepreka:
-        if moc.pokupljena and moc.ime == "2x":
+        if moc.pokupljena and moc.ime == "brzina":
             prepreka.posY += backgroundSpeed+2
         else:
             prepreka.posY += inicijalnaBrzina
+        if moc.pokupljena and moc.ime == "stit":
+            if igrac.hitbox.colliderect(prepreka.hitbox):
+                prepreka.slika = pygame.image.load("slomljenaKutija.png")
+                prepreka.slomljena = True
+
         prozor.blit(prepreka.slika, (prepreka.posX, prepreka.posY))
         prepreka.hitbox = pygame.Rect(prepreka.posX, prepreka.posY, 100, 100)
         if prepreka.posY > 900:
@@ -123,8 +177,14 @@ def refreshScreen():
             moc.trajanje -= 1
         if moc.trajanje == 0:
             moc.pokupljena = False
+            mocFlag = False
             moc.posY = 850
             backgroundSpeed = inicijalnaBrzina
+        if moc.posY > 850 and not moc.pokupljena:
+            mocFlag = False
+        if moc.pokupljena and moc.ime == "stit":
+            prozor.blit(moc.balon, (igrac.posX - 20, igrac.posY - 20))
+
         if not moc.pokupljena:
             prozor.blit(moc.slika, (moc.posX, moc.posY))
             #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(moc.posX, moc.posY, 100, 100), 5)
@@ -134,17 +194,18 @@ def refreshScreen():
         moc.posX += mocPravac*5
         moc.posY += 5
         moc.hitbox = pygame.Rect(moc.posX, moc.posY, 100, 100)
-        if moc.posY > 850 and moc.trajanje == 0:
-            mocFlag = False
+
 
     '''for prepreka in listaPrepreka:
         pygame.draw.rect(prozor, (255, 0, 0), prepreka.hitbox, 5)'''
-    if moc.pokupljena and moc.ime == "2x":
+    if moc.pokupljena and moc.ime == "brzina":
         backgroundOffset += backgroundSpeed+2
     else:
         backgroundOffset += backgroundSpeed
     if backgroundOffset > 0:
         backgroundOffset = -800
+
+
     prozor.blit(igrac.slika, (igrac.posX, igrac.posY))
     poeniPrint()
 
@@ -154,7 +215,7 @@ def stvarajPrepreke():
     global mocFlag, moc
     if random.randint(1, 100) == 50:
         listaPrepreka.append(Prepreka(random.choice(pozicijePreprekaX)))
-    if random.randint(1, 100) == 5 and not mocFlag:
+    if random.randint(1, 10) == 5 and not mocFlag:
         randomBroj = random.randint(0, 1)
         moc = Moci(listaMociSlika[randomBroj], listaMociImena[randomBroj], random.choice(pozicijePreprekaX))
         mocFlag = True
@@ -221,12 +282,12 @@ def poeniPrint():
 
 run = True
 mocFlag = False
-moc = Moci(pygame.image.load("2x.png"), "2x", 70)
+moc = Moci(pygame.image.load("brzina.png"), "brzina", 70)
 mocPravac = 1
 pozicijePreprekaX = (70, 190, 310, 430)
 listaPrepreka = []
-listaMociImena = ["2x", "stit"]
-listaMociSlika = [pygame.image.load("2x.png"), pygame.image.load("stit.png")]
+listaMociImena = ["brzina", "stit"]
+listaMociSlika = [pygame.image.load("brzina.png"), pygame.image.load("stit.png")]
 poeni = 0
 background = pygame.image.load('put4trake.png')
 pauza = pygame.image.load("pauza.png")
