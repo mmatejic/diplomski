@@ -1,4 +1,5 @@
 import random
+import sqlite3
 
 import pygame
 
@@ -67,6 +68,7 @@ def mainMenu():
                     quit()
                 if pygame.Rect(220, 430, 160, 50).collidepoint(x, y):
                     helpMenu()
+    unesiImeMeni()
     gameMainLoop()
 
 def pauzaMenu():
@@ -112,6 +114,69 @@ def helpMenu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
+def unesiImeMeni():
+    global ime
+    clock = pygame.time.Clock()
+
+    input_box = pygame.Rect(150, 300, 300, 45)
+    color_inactive = pygame.Color('gray')
+    color_active = pygame.Color('white')
+    color = color_active
+    active = True
+    text = ''
+    done = False
+    font = pygame.font.SysFont('Comic Sans MS', 30)
+    labelaIme = "Unesite vase ime:"
+    labelaIme = font.render(labelaIme, True, (255, 255, 255))
+    imeRect = labelaIme.get_rect()
+    imeRect.centerx = prozor.get_rect().centerx
+    imeRect.centery = 200
+    pygame.display.flip()
+    while not done:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # If the user clicked on the input_box rect.
+                if input_box.collidepoint(event.pos):
+                    # Toggle the active variable.
+                    active = True
+                else:
+                    active = False
+                # Change the current color of the input box.
+                color = color_active if active else color_inactive
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        ime = text
+                        text = ''
+                        done = True
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+
+        prozor.fill((0, 0, 0))
+        prozor.blit(labelaIme, imeRect)
+        # Render the current text.
+        txt_surface = font.render(text, True, color)
+        # Resize the box if the text is too long.
+        #width = max(200, txt_surface.get_width() + 10)
+        #input_box.w = width
+        # Blit the text.
+        prozor.blit(txt_surface, (input_box.x + 5, input_box.y))
+        # Blit the input_box rect.
+        pygame.draw.rect(prozor, color, input_box, 2)
+
+        pygame.display.flip()
+        clock.tick(50)
+
+
+
+
 
 def gameMainLoop():
     global run, poeni, listaPrepreka, backgroundSpeed, brzinaFlag, stitFlag
@@ -246,20 +311,40 @@ def stvarajPrepreke():
         mocFlag = True
 
 def gameOver():
-    global run
+    global run, ime
     run = False
     gameOverSlika = pygame.image.load("gameOverMenu.png")
     prozor.blit(gameOverSlika, (0, 0))
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    text1 = "Osvojili ste " + str(poeni) + " poena!"
-    text1 = font.render(text1, True, (255, 255, 255))
+    imeLabela = font.render(str("Cestitamo " + ime + ','), True, (255, 255, 255))
+    rectIme = imeLabela.get_rect()
+    rectIme.centerx = prozor.get_rect().centerx
+    rectIme.centery = 110
+    poeniLabela = "Osvojili ste " + str(poeni) + " poena!"
+    poeniLabela = font.render(poeniLabela, True, (255, 255, 255))
+    rectPoeni = poeniLabela.get_rect()
+    rectPoeni.centerx = prozor.get_rect().centerx
+    rectPoeni.centery = 150
     #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(161, 520, 75, 75), 1)
     #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(264, 520, 75, 75), 1)
     #ygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(365, 520, 75, 75), 1)
 
-
-    prozor.blit(text1, (140, 150))
+    prozor.blit(imeLabela, rectIme)
+    prozor.blit(poeniLabela, rectPoeni)
     pygame.display.flip()
+
+    conn = sqlite3.connect('game.db')
+    c = conn.cursor()
+    #c.execute('INSERT INTO igrac (ime, poeni) values ("' + ime + '", ' + str(poeni) + ')')
+    # conn.commit()
+    # c.execute('delete from igrac where ime = "ImeIgraca"')
+    # conn.commit()
+
+    for row in c.execute('SELECT * FROM igrac'):
+        print(row)
+    conn.close()
+
+
     cekaj = True
     while cekaj:
         for event in pygame.event.get():
@@ -277,6 +362,7 @@ def gameOver():
                 if pygame.Rect(365, 520, 75, 75).collidepoint(x, y):
                     pygame.quit()
                     quit()
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
@@ -302,7 +388,7 @@ def poeniPrint():
     prozor.blit(text3, (5, 35))
 
 
-
+ime = ''
 run = True
 mocFlag = False
 moc = Moci(pygame.image.load("brzina.png"), "brzina", 70)
@@ -320,4 +406,3 @@ backgroundOffset = -800
 backgroundSpeed = 5
 igrac = Player()
 mainMenu()
-
