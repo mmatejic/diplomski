@@ -10,14 +10,14 @@ pygame.init()
 class Player():
     posX = 250
     posY = 600
-    slika = pygame.image.load('auto.png')
+    slika = pygame.image.load("auto.png")
     brzina = 6
     hitbox = pygame.Rect(posX, posY, 100, 180)
 
 class Prepreka():
     posX = 0
     posY = -100
-    slika = pygame.image.load('kutija.png')
+    slika = pygame.image.load("kutija.png")
     hitbox = pygame.Rect(posX, posY, 100, 100)
     slomljena = False
     def __init__(self, x):
@@ -49,9 +49,9 @@ def mainMenu():
 
     while menu:
         prozor.blit(menuSlika, (0, 0))
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 355, 160, 50), 5)
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 430, 160, 50), 5)
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 580, 150, 50), 5)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 355, 160, 50), 5)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(220, 430, 160, 50), 5)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 580, 150, 50), 5)
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -74,7 +74,7 @@ def helpMenu():
     helpSlika = pygame.image.load("help.png")
     while helpFlag:
         prozor.blit(helpSlika, (0, 0))
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(210, 680, 160, 50), 5)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(210, 680, 160, 50), 5)
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -94,7 +94,7 @@ def gameMainLoop():
     igrac.posX = 250
     igrac.posY = 600
     igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
-    mainMenu()
+
     while run:
         #pygame.time.delay(10)
         clock = pygame.time.Clock()
@@ -295,4 +295,5 @@ prozor = pygame.display.set_mode((600, 800))
 backgroundOffset = -800
 backgroundSpeed = 5
 igrac = Player()
+mainMenu()
 gameMainLoop()
