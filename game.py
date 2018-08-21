@@ -67,6 +67,34 @@ def mainMenu():
                     quit()
                 if pygame.Rect(220, 430, 160, 50).collidepoint(x, y):
                     helpMenu()
+    gameMainLoop()
+
+def pauzaMenu():
+    pauzaFlag = True
+    pauzaSlika = pygame.image.load("pauseMenu.png")
+    prozor.blit(pauzaSlika, (0, 0))
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(109, 363, 75, 75), 1)
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(210, 363, 75, 75), 1)
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(313, 363, 75, 75), 1)
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(414, 363, 75, 75), 1)
+
+    pygame.display.flip()
+    while pauzaFlag:
+        for r in pygame.event.get():
+            if r.type == pygame.MOUSEBUTTONDOWN:
+                x, y = r.pos
+                if pygame.Rect(109, 363, 75, 75).collidepoint(x, y):
+                    pauzaFlag = False
+                if pygame.Rect(210, 363, 75, 75).collidepoint(x, y):
+                    gameMainLoop()
+                if pygame.Rect(313, 363, 75, 75).collidepoint(x, y):
+                    mainMenu()
+                if pygame.Rect(414, 363, 75, 75).collidepoint(x, y):
+                    pygame.quit()
+                    quit()
+            if r.type == pygame.QUIT:
+                pygame.quit()
+                quit()
 
 
 def helpMenu():
@@ -94,6 +122,8 @@ def gameMainLoop():
     igrac.posX = 250
     igrac.posY = 600
     igrac.hitbox = pygame.Rect(igrac.posX, igrac.posY, 100, 180)
+    moc.pokupljena = False
+    moc.trajanje = 0
 
     while run:
         #pygame.time.delay(10)
@@ -108,14 +138,8 @@ def gameMainLoop():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if pygame.Rect(550, 0, 50, 50).collidepoint(x, y):
-                    pauzaFlag = True
-                    while pauzaFlag:
-                        for r in pygame.event.get():
-                            if r.type == pygame.MOUSEBUTTONDOWN:
-                                pauzaFlag = False
-                            if r.type == pygame.QUIT:
-                                run = False
-                                pauzaFlag = False
+                    pauzaMenu()
+
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
@@ -152,8 +176,9 @@ def gameMainLoop():
 def refreshScreen():
     global backgroundOffset, mocFlag, mocPravac, backgroundSpeed
     inicijalnaBrzina = backgroundSpeed
-    if moc.pokupljena and moc.ime == "brzina":
-        backgroundSpeed += 2
+    #if moc.pokupljena and moc.ime == "brzina" and moc.trajanje == 500:
+        #backgroundSpeed = inicijalnaBrzina + 2
+
     prozor.blit(background, (0, backgroundOffset))
     #pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
     prozor.blit(pauza, (550, 0))
@@ -223,17 +248,17 @@ def stvarajPrepreke():
 def gameOver():
     global run
     run = False
-    gameOver = pygame.image.load('gameOver.png')
-    prozor.fill((0, 0, 0))
+    gameOverSlika = pygame.image.load("gameOverMenu.png")
+    prozor.blit(gameOverSlika, (0, 0))
     font = pygame.font.SysFont('Comic Sans MS', 30)
     text1 = "Osvojili ste " + str(poeni) + " poena!"
-    text11 = font.render(text1, True, (255, 255, 255))
-    prozor.blit(text11, (140, 150))
-    playAgainRect = pygame.Rect(200, 420, 75, 75)
-    quitRect = pygame.Rect(325, 420, 75, 75)
-    prozor.blit(gameOver, (125, 200))
-    prozor.blit(pygame.image.load('playAgain.png'), (200, 420))
-    prozor.blit(pygame.image.load('quit.png'), (325, 420))
+    text1 = font.render(text1, True, (255, 255, 255))
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(161, 520, 75, 75), 1)
+    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(264, 520, 75, 75), 1)
+    #ygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(365, 520, 75, 75), 1)
+
+
+    prozor.blit(text1, (140, 150))
     pygame.display.flip()
     cekaj = True
     while cekaj:
@@ -243,18 +268,16 @@ def gameOver():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Set the x, y postions of the mouse click
                 x, y = event.pos
-                if playAgainRect.collidepoint(x, y):
+                if pygame.Rect(161, 520, 75, 75).collidepoint(x, y):
                     cekaj = False
-                    moc.pokupljena = False
-                    moc.trajanje = 0
                     gameMainLoop()
-                elif quitRect.collidepoint(x, y):
-                    run = False
+                if pygame.Rect(264, 520, 75, 75).collidepoint(x, y):
                     cekaj = False
+                    mainMenu()
+                if pygame.Rect(365, 520, 75, 75).collidepoint(x, y):
                     pygame.quit()
                     quit()
             if event.type == pygame.QUIT:
-                run = False
                 pygame.quit()
                 quit()
 
@@ -292,8 +315,9 @@ poeni = 0
 background = pygame.image.load('put4trake.png')
 pauza = pygame.image.load("pauza.png")
 prozor = pygame.display.set_mode((600, 800))
+pygame.display.set_caption("Highway to hell")
 backgroundOffset = -800
 backgroundSpeed = 5
 igrac = Player()
 mainMenu()
-gameMainLoop()
+
