@@ -51,10 +51,10 @@ def mainMenu():
 
     while mainMenuFlag:
         prozor.blit(menuSlika, (0, 0))
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 354, 160, 52), 1)
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 434, 160, 52), 1)
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(98, 514, 408, 52), 1)
-        pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 593, 152, 54), 1)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 354, 160, 52), 1)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 434, 160, 52), 1)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(98, 514, 408, 52), 1)
+        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 593, 152, 54), 1)
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -135,11 +135,11 @@ def unesiImeMeni():
     text = ''
     done = False
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    labelaIme = "Unesite vase ime:"
+    labelaIme = "ENTER YOUR NAME"
     labelaIme = font.render(labelaIme, True, (255, 255, 255))
     imeRect = labelaIme.get_rect()
     imeRect.centerx = prozor.get_rect().centerx
-    imeRect.centery = 200
+    imeRect.centery = 250
     while done == False:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -287,7 +287,7 @@ def gameMainLoop():
 
 
 def refreshScreen():
-    global backgroundOffset, mocFlag, mocPravac, backgroundSpeed
+    global backgroundOffset, mocFlag, mocPravac, backgroundSpeed, poeni
     inicijalnaBrzina = backgroundSpeed
     #if moc.pokupljena and moc.ime == "brzina" and moc.trajanje == 500:
         #backgroundSpeed = inicijalnaBrzina + 2
@@ -302,9 +302,10 @@ def refreshScreen():
         else:
             prepreka.posY += inicijalnaBrzina
         if moc.pokupljena and moc.ime == "stit":
-            if igrac.hitbox.colliderect(prepreka.hitbox):
+            if igrac.hitbox.colliderect(prepreka.hitbox) and not prepreka.slomljena:
                 prepreka.slika = pygame.image.load("slike/slomljenaKutija.png")
                 prepreka.slomljena = True
+                poeni += 500
 
         prozor.blit(prepreka.slika, (prepreka.posX, prepreka.posY))
         prepreka.hitbox = pygame.Rect(prepreka.posX, prepreka.posY, 100, 100)
