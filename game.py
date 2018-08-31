@@ -1,7 +1,8 @@
 import random
 import sqlite3
 import pygame
-
+pygame.mixer.pre_init(44100, -16, 2, 2048)
+pygame.mixer.init()
 pygame.init()
 
 
@@ -19,6 +20,7 @@ class Prepreka:
     slika = pygame.image.load("slike/kutija.png")
     hitbox = pygame.Rect(posX, posY, 100, 100)
     slomljena = False
+
     def __init__(self, x):
         self.posX = x
 
@@ -27,34 +29,42 @@ class Prepreka:
 
 
 class Moci:
-    posX = 0
-    posY = -100
-    ime = ""
+    pos_x = 0
+    pos_y = -100
     slika = pygame.image.load("slike/brzina.png")
-    hitbox = pygame.Rect(posX, posY, 100, 100)
+    hitbox = pygame.Rect(pos_x, pos_y, 100, 100)
     trajanje = 500
     pokupljena = False
     balon = pygame.image.load("slike/balon.png")
-    def __init__(self, slika, ime, posX):
-        self.ime = ime
+
+    def __init__(self, slika, naziv, pos_x):
+        self.ime = naziv
         self.slika = slika
-        self.posX = posX
+        self.posX = pos_x
 
     def __del__(self):
         pass
 
 
-def mainMenu():
-    global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag, unesiImeFleg
+def main_menu():
+    global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag, unesiImeFleg, musicFlag, \
+        soundFlag
     mainMenuFlag = True
-    menuSlika = pygame.image.load("slike/menuSlika.png")
-
+    menu_slika = pygame.image.load("slike/menu_slika.png")
+    mute_music = pygame.image.load("slike/MusicBela.png")
+    mute_sound = pygame.image.load("slike/VolumeBela.png")
     while mainMenuFlag:
-        prozor.blit(menuSlika, (0, 0))
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 354, 160, 52), 1)
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 434, 160, 52), 1)
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(98, 514, 408, 52), 1)
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 593, 152, 54), 1)
+        prozor.blit(menu_slika, (0, 0))
+        prozor.blit(mute_music, (550, 750))
+        prozor.blit(mute_sound, (500, 750))
+        if not soundFlag:
+            pygame.draw.line(prozor, (255, 0, 0), (505, 795), (545, 755), 5)
+        if not musicFlag:
+            pygame.draw.line(prozor, (255, 0, 0), (555, 795), (595, 755), 5)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 354, 160, 52), 1)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(222, 434, 160, 52), 1)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(98, 514, 408, 52), 1)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(225, 593, 152, 54), 1)
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -71,17 +81,29 @@ def mainMenu():
                 if pygame.Rect(98, 514, 408, 52).collidepoint(x, y):
                     scoreboardMenuFlag = True
                     mainMenuFlag = False
+                if pygame.Rect(550, 750, 50, 50).collidepoint(x, y):
+                    if musicFlag:
+                        pygame.mixer.music.pause()
+                        musicFlag = False
+                    else:
+                        pygame.mixer.music.unpause()
+                        musicFlag = True
+                if pygame.Rect(500, 750, 50, 50).collidepoint(x, y):
+                    if soundFlag:
+                        soundFlag = False
+                    else:
+                        soundFlag = True
                 if pygame.Rect(225, 593, 152, 54).collidepoint(x, y):
                     mainMenuFlag = False
                     pygame.quit()
                     quit()
 
 
-def pauzaMenu():
+def pauza_menu():
     global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag
     pauzaMenuFlag = True
-    pauzaSlika = pygame.image.load("slike/pauseMenu.png")
-    prozor.blit(pauzaSlika, (0, 0))
+    pauza_slika = pygame.image.load("slike/pause_menu.png")
+    prozor.blit(pauza_slika, (0, 0))
     pygame.display.flip()
     while pauzaMenuFlag:
         for r in pygame.event.get():
@@ -105,13 +127,13 @@ def pauzaMenu():
                 quit()
 
 
-def helpMenu():
+def help_menu():
     global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag
     helpMenuFlag = True
-    helpSlika = pygame.image.load("slike/help.png")
-    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(207, 676, 174, 50), 1)
+    help_slika = pygame.image.load("slike/help.png")
+    # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(207, 676, 174, 50), 1)
     while helpMenuFlag:
-        prozor.blit(helpSlika, (0, 0))
+        prozor.blit(help_slika, (0, 0))
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -124,7 +146,7 @@ def helpMenu():
                 quit()
 
 
-def unesiImeMeni():
+def unesi_ime_menu():
     global ime, mainMenuFlag, run, unesiImeFleg
     clock = pygame.time.Clock()
     input_box = pygame.Rect(150, 300, 300, 45)
@@ -135,12 +157,12 @@ def unesiImeMeni():
     text = ''
     done = False
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    labelaIme = "ENTER YOUR NAME"
-    labelaIme = font.render(labelaIme, True, (255, 255, 255))
-    imeRect = labelaIme.get_rect()
-    imeRect.centerx = prozor.get_rect().centerx
-    imeRect.centery = 250
-    while done == False:
+    labela_ime = "ENTER YOUR NAME"
+    labela_ime = font.render(labela_ime, True, (255, 255, 255))
+    ime_rect = labela_ime.get_rect()
+    ime_rect.centerx = prozor.get_rect().centerx
+    ime_rect.centery = 250
+    while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -174,15 +196,17 @@ def unesiImeMeni():
                             ime = "Nije uneto ime"
                         text = ''
                         done = True
+                        run = True
+                        unesiImeFleg = False
                     elif event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
                     else:
                         text += event.unicode
         prozor.fill((0, 0, 0))
         prozor.blit(pygame.image.load("slike/unesiImeDugmad.png"), (181, 400))
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(182, 402, 235, 52), 1)
-        #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(217, 481, 167, 52), 1)
-        prozor.blit(labelaIme, imeRect)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(182, 402, 235, 52), 1)
+        # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(217, 481, 167, 52), 1)
+        prozor.blit(labela_ime, ime_rect)
         txt_surface = font.render(text, True, color)
         prozor.blit(txt_surface, (input_box.x + 5, input_box.y))
         pygame.draw.rect(prozor, color, input_box, 2)
@@ -190,30 +214,21 @@ def unesiImeMeni():
         clock.tick(50)
 
 
-def scoreMenu():
+def score_menu():
     global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag
     scoreboardMenuFlag = True
     prozor.blit(pygame.image.load("slike/scoreBoard.png"), (0, 0))
-    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(207, 676, 174, 50), 1)
+    # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(207, 676, 174, 50), 1)
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    offsetY = 140
+    offset_y = 140
     conn = sqlite3.connect("game.db")
     c = conn.cursor()
-    for broj in c.execute("select count(*) from igrac"):
-        if broj[0] > 10:
-            for fetch in c.execute("select * from igrac order by poeni desc limit 10"):
-                textIme = font.render(fetch[0], True, (255, 255, 255))
-                textPoeni = font.render(str(fetch[1]), True, (255, 255, 255))
-                prozor.blit(textIme, (100, offsetY))
-                prozor.blit(textPoeni, (380, offsetY))
-                offsetY += 46
-        else:
-            for fetch in c.execute("select * from igrac order by poeni desc"):
-                textIme = font.render(fetch[0], True, (255, 255, 255))
-                textPoeni = font.render(str(fetch[1]), True, (255, 255, 255))
-                prozor.blit(textIme, (100, offsetY))
-                prozor.blit(textPoeni, (380, offsetY))
-                offsetY += 46
+    for fetch in c.execute("select * from igrac order by poeni desc"):
+        text_ime = font.render(fetch[0], True, (255, 255, 255))
+        text_poeni = font.render(str(fetch[1]), True, (255, 255, 255))
+        prozor.blit(text_ime, (100, offset_y))
+        prozor.blit(text_poeni, (380, offset_y))
+        offset_y += 46
     pygame.display.update()
     conn.close()
     while scoreboardMenuFlag:
@@ -228,8 +243,8 @@ def scoreMenu():
                     mainMenuFlag = True
 
 
-def gameMainLoop():
-    global run, poeni, listaPrepreka, backgroundSpeed, brzinaFlag, stitFlag, restartFlag
+def game_main_loop():
+    global run, poeni, listaPrepreka, backgroundSpeed, restartFlag, soundFlag, musicFlag
     if restartFlag:
         restartFlag = False
     pygame.display.flip()
@@ -245,8 +260,8 @@ def gameMainLoop():
     while run:
         clock = pygame.time.Clock()
         pygame.display.flip()
-        refreshScreen()
-        stvarajPrepreke()
+        refresh_screen()
+        stvaraj_prepreke()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -254,8 +269,19 @@ def gameMainLoop():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if pygame.Rect(550, 0, 50, 50).collidepoint(x, y):
-                    pauzaMenu()
-
+                    pauza_menu()
+                if pygame.Rect(550, 50, 50, 50).collidepoint(x, y):
+                    if soundFlag:
+                        soundFlag = False
+                    else:
+                        soundFlag = True
+                if pygame.Rect(550, 100, 50, 50).collidepoint(x, y):
+                    if musicFlag:
+                        pygame.mixer.music.pause()
+                        musicFlag = False
+                    else:
+                        pygame.mixer.music.unpause()
+                        musicFlag = True
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
             if igrac.posX > 70:
@@ -276,34 +302,45 @@ def gameMainLoop():
 
         for prepreka in listaPrepreka:
             if igrac.hitbox.colliderect(prepreka.hitbox) and not moc.pokupljena and not prepreka.slomljena:
-                gameOver()
-            elif igrac.hitbox.colliderect(prepreka.hitbox) and moc.pokupljena and moc.ime == "brzina" and not prepreka.slomljena:
-                gameOver()
+                game_over()
+            elif igrac.hitbox.colliderect(prepreka.hitbox) and moc.pokupljena and moc.ime == "brzina" and not \
+                    prepreka.slomljena:
+                game_over()
 
         if igrac.hitbox.colliderect(moc.hitbox) and not moc.pokupljena and mocFlag:
+            if soundFlag:
+                pygame.mixer.Sound('zvuci/stit.wav').play()
             moc.pokupljena = True
             moc.trajanje = 500
         clock.tick(50)
 
 
-def refreshScreen():
+def refresh_screen():
     global backgroundOffset, mocFlag, mocPravac, backgroundSpeed, poeni
-    inicijalnaBrzina = backgroundSpeed
-    #if moc.pokupljena and moc.ime == "brzina" and moc.trajanje == 500:
-        #backgroundSpeed = inicijalnaBrzina + 2
+    inicijalna_brzina = backgroundSpeed
+    # if moc.pokupljena and moc.ime == "brzina" and moc.trajanje == 500:
+    # backgroundSpeed = inicijalna_brzina + 2
 
     prozor.blit(background, (0, backgroundOffset))
-    #pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
+    # pygame.draw.rect(prozor, (255, 0, 0), igrac.hitbox, 5)
     prozor.blit(pauza, (550, 0))
+    prozor.blit(mute_sound_game, (550, 50))
+    prozor.blit(mute_music_game, (550, 100))
+    if not soundFlag:
+        pygame.draw.line(prozor, (255, 0, 0), (555, 95), (595, 55), 5)
+    if not musicFlag:
+        pygame.draw.line(prozor, (255, 0, 0), (555, 145), (595, 105), 5)
 
     for prepreka in listaPrepreka:
         if moc.pokupljena and moc.ime == "brzina":
             prepreka.posY += backgroundSpeed+2
         else:
-            prepreka.posY += inicijalnaBrzina
+            prepreka.posY += inicijalna_brzina
         if moc.pokupljena and moc.ime == "stit":
             if igrac.hitbox.colliderect(prepreka.hitbox) and not prepreka.slomljena:
                 prepreka.slika = pygame.image.load("slike/slomljenaKutija.png")
+                if soundFlag:
+                    pygame.mixer.Sound('zvuci/crate_break.wav').play()
                 prepreka.slomljena = True
                 poeni += 500
 
@@ -317,23 +354,22 @@ def refreshScreen():
         if moc.trajanje == 0:
             moc.pokupljena = False
             mocFlag = False
-            moc.posY = 850
-            backgroundSpeed = inicijalnaBrzina
-        if moc.posY > 850 and not moc.pokupljena:
+            moc.pos_y = 850
+            backgroundSpeed = inicijalna_brzina
+        if moc.pos_y > 850 and not moc.pokupljena:
             mocFlag = False
         if moc.pokupljena and moc.ime == "stit":
             prozor.blit(moc.balon, (igrac.posX - 20, igrac.posY - 20))
 
         if not moc.pokupljena:
-            prozor.blit(moc.slika, (moc.posX, moc.posY))
-            #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(moc.posX, moc.posY, 100, 100), 5)
+            prozor.blit(moc.slika, (moc.posX, moc.pos_y))
+            # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(moc.posX, moc.pos_y, 100, 100), 5)
 
         if moc.posX < 70 or moc.posX > 430:
             mocPravac *= -1
         moc.posX += mocPravac*5
-        moc.posY += 5
-        moc.hitbox = pygame.Rect(moc.posX, moc.posY, 100, 100)
-
+        moc.pos_y += 5
+        moc.hitbox = pygame.Rect(moc.posX, moc.pos_y, 100, 100)
 
     '''for prepreka in listaPrepreka:
         pygame.draw.rect(prozor, (255, 0, 0), prepreka.hitbox, 5)'''
@@ -343,50 +379,50 @@ def refreshScreen():
         backgroundOffset += backgroundSpeed
     if backgroundOffset > 0:
         backgroundOffset = -800
-
-
     prozor.blit(igrac.slika, (igrac.posX, igrac.posY))
-    poeniPrint()
-
+    poeni_print()
     pygame.display.flip()
 
 
-def stvarajPrepreke():
+def stvaraj_prepreke():
     global mocFlag, moc
     if random.randint(1, 100) == 50:
         listaPrepreka.append(Prepreka(random.choice(pozicijePreprekaX)))
-    if random.randint(1, 10) == 5 and not mocFlag:
-        randomBroj = random.randint(0, 1)
-        moc = Moci(listaMociSlika[randomBroj], listaMociImena[randomBroj], random.choice(pozicijePreprekaX))
+    if random.randint(1, 100) == 5 and not mocFlag:
+        random_broj = random.randint(0, 1)
+        moc = Moci(listaMociSlika[random_broj], listaMociImena[random_broj], random.choice(pozicijePreprekaX))
         mocFlag = True
 
 
-def gameOver():
-    global run, ime
+def game_over():
+    global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag, unesiImeFleg
     run = False
-    gameOverSlika = pygame.image.load("slike/gameOverMenu.png")
-    prozor.blit(gameOverSlika, (0, 0))
+    if soundFlag:
+        pygame.mixer.Sound('zvuci/game_over.wav').play()
+    game_over_slika = pygame.image.load("slike/game_over_menu.png")
+    prozor.blit(game_over_slika, (0, 0))
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    imeLabela = font.render(str("Cestitamo " + ime + ','), True, (255, 255, 255))
-    rectIme = imeLabela.get_rect()
-    rectIme.centerx = prozor.get_rect().centerx
-    rectIme.centery = 110
-    poeniLabela = "Osvojili ste " + str(poeni) + " poena!"
-    poeniLabela = font.render(poeniLabela, True, (255, 255, 255))
-    rectPoeni = poeniLabela.get_rect()
-    rectPoeni.centerx = prozor.get_rect().centerx
-    rectPoeni.centery = 150
-    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(161, 520, 75, 75), 1)
-    #pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(264, 520, 75, 75), 1)
-    #ygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(365, 520, 75, 75), 1)
+    ime_labela = font.render(str("Cestitamo " + ime + ','), True, (255, 255, 255))
+    rect_ime = ime_labela.get_rect()
+    rect_ime.centerx = prozor.get_rect().centerx
+    rect_ime.centery = 110
+    poeni_labela = "Osvojili ste " + str(poeni) + " poena!"
+    poeni_labela = font.render(poeni_labela, True, (255, 255, 255))
+    rect_poeni = poeni_labela.get_rect()
+    rect_poeni.centerx = prozor.get_rect().centerx
+    rect_poeni.centery = 150
+    # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(161, 520, 75, 75), 1)
+    # pygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(264, 520, 75, 75), 1)
+    # ygame.draw.rect(prozor, (255, 0, 0), pygame.Rect(365, 520, 75, 75), 1)
 
-    prozor.blit(imeLabela, rectIme)
-    prozor.blit(poeniLabela, rectPoeni)
+    prozor.blit(ime_labela, rect_ime)
+    prozor.blit(poeni_labela, rect_poeni)
     pygame.display.flip()
 
     conn = sqlite3.connect('game.db')
     c = conn.cursor()
-    c.execute('INSERT INTO igrac (ime, poeni) values ("' + ime + '", ' + str(poeni) + ')')
+    c.execute('update igrac set ime = "' + ime + '", poeni = ' + str(poeni) +
+              ' where poeni = (select min(poeni) from igrac)')
     conn.commit()
     conn.close()
 
@@ -394,25 +430,26 @@ def gameOver():
     while cekaj:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                pygame.quit()
+                quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Set the x, y postions of the mouse click
                 x, y = event.pos
                 if pygame.Rect(161, 520, 75, 75).collidepoint(x, y):
                     cekaj = False
-                    gameMainLoop()
+                    restartFlag = True
                 if pygame.Rect(264, 520, 75, 75).collidepoint(x, y):
                     cekaj = False
-                    mainMenu()
+                    mainMenuFlag = True
                 if pygame.Rect(365, 520, 75, 75).collidepoint(x, y):
                     pygame.quit()
                     quit()
-
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
 
-def poeniPrint():
+
+def poeni_print():
     global poeni, backgroundSpeed
     text1 = "Poeni: "
     text2 = str(poeni)
@@ -425,36 +462,42 @@ def poeniPrint():
     if int(poeni / 1000) + backgroundSpeed > backgroundSpeed:
         backgroundSpeed = 5 + (int(poeni / 1000 / 2))
     if moc.pokupljena:
-        poeniText = "Moc: " + str(moc.trajanje)
-        poeniText = font.render(poeniText, True, (0, 0, 0))
-        prozor.blit(poeniText, (5, 50))
+        poeni_text = "Moc: " + str(moc.trajanje)
+        poeni_text = font.render(poeni_text, True, (0, 0, 0))
+        prozor.blit(poeni_text, (5, 50))
     prozor.blit(text1, (5, 5))
     prozor.blit(text2, (5, 20))
     prozor.blit(text3, (5, 35))
 
-def glavniLoop():
+
+def glavni_loop():
     global run, restartFlag, mainMenuFlag, helpMenuFlag, pauzaMenuFlag, scoreboardMenuFlag, unesiImeFleg
     mainMenuFlag = True
+    pygame.mixer.music.load("zvuci/Highway To Hell.wav")
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(loops=-1)
     while True:
         if mainMenuFlag:
-            mainMenu()
+            main_menu()
         elif unesiImeFleg:
-            unesiImeMeni()
+            unesi_ime_menu()
         elif run:
-            gameMainLoop()
+            game_main_loop()
         elif restartFlag:
-            gameMainLoop()
+            game_main_loop()
         elif helpMenuFlag:
-            helpMenu()
+            help_menu()
         elif pauzaMenuFlag:
-            pauzaMenu()
+            pauza_menu()
         elif scoreboardMenuFlag:
-            scoreMenu()
+            score_menu()
 
 
-run = restartFlag = mainMenuFlag = helpMenuFlag = pauzaMenuFlag = scoreboardMenuFlag = unesiImeFleg = False
+run = restartFlag = mainMenuFlag = helpMenuFlag = pauzaMenuFlag = scoreboardMenuFlag = unesiImeFleg = GameOverFlag \
+    = False
 ime = ''
 mocFlag = False
+musicFlag = soundFlag = True
 moc = Moci(pygame.image.load("slike/brzina.png"), "brzina", 70)
 mocPravac = 1
 pozicijePreprekaX = (70, 190, 310, 430)
@@ -464,9 +507,11 @@ listaMociSlika = [pygame.image.load("slike/brzina.png"), pygame.image.load("slik
 poeni = 0
 background = pygame.image.load('slike/put4trake.png')
 pauza = pygame.image.load("slike/pauza.png")
+mute_music_game = pygame.image.load("slike/MusicCrna.png")
+mute_sound_game = pygame.image.load("slike/VolumeCrna.png")
 prozor = pygame.display.set_mode((600, 800))
 pygame.display.set_caption("Highway to hell")
 backgroundOffset = -800
 backgroundSpeed = 5
 igrac = Player()
-glavniLoop()
+glavni_loop()

@@ -1,0 +1,4 @@
+vlc.egg-info/PKG-INFO
+vlc.egg-info/SOURCES.txt
+vlc.egg-info/dependency_links.txt
+vlc.egg-info/top_level.txt
